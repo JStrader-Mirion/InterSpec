@@ -46,8 +46,10 @@ RUN  cmake \
         -DUSE_SEARCH_MODE_3D_CHART=ON \
         -DUSE_QR_CODES=ON \
         -DUSE_DETECTION_LIMIT_TOOL=ON \
+        -DUSE_BATCH_TOOLS=OFF \
         -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++" \
         -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
+        -DUSE_BATCH_TOOLS=OFF \
         ./src
 RUN  mkdir -p /InterSpec && \
      cmake --build build -j4
@@ -68,6 +70,9 @@ RUN apk --no-cache add \
         chmod a+x bin/InterSpec &&  \
         chmod 777 /interspec
 CMD ["/interspec/bin/InterSpec", "--config", "/interspec/share/interspec/data/config/wt_config_web.xml", "--userdatadir=/data", "--http-port=8078", "--http-address=0.0.0.0", "--docroot", "/interspec/share/interspec"]
+
+
+
 
 
 # Then numeric group/user value of 280 was chosen randomly; it doesnt conflict with existing groups/users on dev or public server, and is below 1000 (e.g., a system user without a home directory or default shell)
