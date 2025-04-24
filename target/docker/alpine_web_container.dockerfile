@@ -24,7 +24,7 @@ WORKDIR /work
 # COPY build ./build
 
 # RUN statements are broken up to allow loading cached images for debugging
-RUN  apk add --no-cache --no-check-certificate \
+RUN  apk add --no-cache \
      alpine-sdk \
      cmake \
      patch \
