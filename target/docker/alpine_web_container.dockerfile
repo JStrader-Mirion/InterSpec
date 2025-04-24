@@ -65,8 +65,7 @@ RUN apk --no-cache add \
         chmod -R a+r * && \
         chmod a+x bin/InterSpec &&  \
         chmod 777 /interspec
-SHELL ["/bin/sh", "-c"]
-ENTRYPOINT ["./bin/InterSpec", "--config ./share/interspec/data/config/wt_config_web.xml", "--userdatadir=/data", "--http-port=8078", "--http-address=0.0.0.0", "--docroot", "./share/interspec"]
+CMD ["/interspec/bin/InterSpec", "--config", "/interspec/share/interspec/data/config/wt_config_web.xml", "--userdatadir=/data", "--http-port=8078", "--http-address=0.0.0.0", "--docroot", "/interspec/share/interspec"]
 
 
 # Then numeric group/user value of 280 was chosen randomly; it doesnt conflict with existing groups/users on dev or public server, and is below 1000 (e.g., a system user without a home directory or default shell)
