@@ -1,26 +1,40 @@
-# Build:
-#  git clone --recursive --depth 1 --branch https://github.com/sandialabs/InterSpec.git master ./InterSpec_code
-#  cd InterSpec_code
-#  docker build -t interspec -v `pwd`:/work/src -p 127.0.0.1:8078:8078/tcp -f alpine_web_container.dockerfile .
-#To run, you can use
-#  docker run -v /path/on/your/fs/to/persist/user/data:/data -p 8078:8078/tcp interspec
-#Or if you dont care about keeping user preferences and stuff around, you can just just map /data to a temp ephemeral dir
-#  docker run --rf -v /data -p 8078:8078/tcp interspec
+# Build Deployable Image:
+#  docker build --tag 'interspec_alpine' -f alpine_web_container.dockerfile .
 
+# Run Prebuilt Image:
+#   docker run --rm -v path/to/your/datadir:/data -p 8078:8078 interspec_alpine
+
+# Run From Dockerfile Directly:
+#   docker run --rm -v path/to/your/datadir:/data -p 8078:8078 -f alpine_web_container.dockerfile .
+
+#  Optional: reuse existing build and/or source directories: Ensure ./build or ./src directory are populated and uncomment the COPY line
+
+# If build fails, add the --no-cache option to the docker build command to force a fresh build
+#  docker build --no-cache --tag 'interspec_alpine' -f alpine_web_container.dockerfile .
 
 FROM alpine:latest AS build
+ARG REPO=https://github.com/sandialabs/InterSpec.git
+ARG BRANCH="master"
 WORKDIR /work
+
+# Optional uncomment and populate directories
+# COPY src ./src
+# COPY build ./build
+
 # RUN statements are broken up to allow loading cached images for debugging
 RUN  apk add --no-cache \
-     alpine-sdk \
-     cmake \
-     patch \
-     linux-headers \
-     suitesparse-dev patch \
-     curl \
-     uglify-js \
-     uglifycss \
-     git 
+        alpine-sdk \
+        cmake \
+        patch \
+        linux-headers \
+        suitesparse-dev patch \
+        curl \
+        uglify-js \
+        uglifycss \
+        git && \
+    if [ ! -d ./src ]; then \
+        git clone --recursive --branch $BRANCH --depth=1 $REPO ./src; \
+    fi
 RUN  cmake \
         -B ./build \
         -DCMAKE_BUILD_TYPE=Release \
@@ -52,7 +66,7 @@ RUN apk --no-cache add \
         chmod a+x bin/InterSpec &&  \
         chmod 777 /interspec
 SHELL ["/bin/sh", "-c"]
-ENTRYPOINT ["./bin/InterSpec", "-c ./share/interspec/data/config/wt_config_web.xml", "--userdatadir=/data", "--http-port=8078", "--http-address=0.0.0.0", "--docroot", "./share/interspec"]
+ENTRYPOINT ["./bin/InterSpec", "--config ./share/interspec/data/config/wt_config_web.xml", "--userdatadir=/data", "--http-port=8078", "--http-address=0.0.0.0", "--docroot", "./share/interspec"]
 
 
 # Then numeric group/user value of 280 was chosen randomly; it doesnt conflict with existing groups/users on dev or public server, and is below 1000 (e.g., a system user without a home directory or default shell)
@@ -61,9 +75,5 @@ ENTRYPOINT ["./bin/InterSpec", "-c ./share/interspec/data/config/wt_config_web.x
 #USER interspec
 # Or just use user guest
 #USER guest
-
-# If build fails, issue this command
-# docker rmi $(docker images -f “dangling=true” -q)
-# docker system prune
 # You could keep the access log by chenging the entrypoint to: "--accesslog=/mnt/interspec_data/wt_access_log.txt"
 # You could also edit the <log-file></log-file> element of data/config/wt_config_web.xml to save the stdout/stderr of InterSpec to a log file at /mnt/interspec_data/interspec_log.txt.
