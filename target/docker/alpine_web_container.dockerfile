@@ -12,7 +12,7 @@
 # If build fails, add the --no-cache option to the docker build command to force a fresh build
 #  docker build --no-cache --tag 'interspec_alpine' -f alpine_web_container.dockerfile .
 
-FROM alpine:latest AS build
+FROM alpine:3 AS build
 ARG REPO=https://github.com/sandialabs/InterSpec.git
 ARG BRANCH="master"
 WORKDIR /work
@@ -53,7 +53,7 @@ RUN  cmake --install ./build --prefix ./InterSpec && \
         rm -rf ./InterSpec/lib/cmake
 
 #Web Server
-FROM alpine:latest
+FROM alpine:3
 LABEL app="InterSpec"
 COPY --from=build /work/InterSpec /interspec/
 WORKDIR /interspec
