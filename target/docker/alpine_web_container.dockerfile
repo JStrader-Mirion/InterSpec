@@ -3,6 +3,8 @@
 
 # Run Prebuilt Image:
 #   docker run --rm -v path/to/your/datadir:/data -p 8078:8078 interspec_alpine
+# Or if you dont care about keeping user preferences and stuff around, you can just just map /data to a temp ephemeral dir
+#   docker run --rf -v /data -p 8078:8078/tcp interspec_alpine
 
 # Run From Dockerfile Directly:
 #   docker run --rm -v path/to/your/datadir:/data -p 8078:8078 -f alpine_web_container.dockerfile .
@@ -13,8 +15,8 @@
 #  docker build --no-cache --tag 'interspec_alpine' -f alpine_web_container.dockerfile .
 
 FROM alpine:3 AS build
-ARG REPO=https://github.com/sandialabs/InterSpec.git
-ARG BRANCH="master"
+ARG  repo=https://github.com/sandialabs/InterSpec.git
+ARG  tag=master
 WORKDIR /work
 
 # Optional uncomment and populate directories
@@ -22,19 +24,19 @@ WORKDIR /work
 # COPY build ./build
 
 # RUN statements are broken up to allow loading cached images for debugging
-RUN  apk add --no-cache \
-        alpine-sdk \
-        cmake \
-        patch \
-        linux-headers \
-        suitesparse-dev patch \
-        curl \
-        uglify-js \
-        uglifycss \
-        git && \
-    if [ ! -d ./src ]; then \
+RUN  apk add --no-cache --no-check-certificate \
+     alpine-sdk \
+     cmake \
+     patch \
+     linux-headers \
+     suitesparse-dev \
+     curl \
+     uglify-js \
+     uglifycss \
+     git && \
+     if [ ! -d ./src ]; then \
         git clone --recursive --branch $BRANCH --depth=1 $REPO ./src; \
-    fi
+     fi
 RUN  cmake \
         -B ./build \
         -DCMAKE_BUILD_TYPE=Release \
@@ -46,10 +48,10 @@ RUN  cmake \
         -DUSE_SEARCH_MODE_3D_CHART=ON \
         -DUSE_QR_CODES=ON \
         -DUSE_DETECTION_LIMIT_TOOL=ON \
+
         -DUSE_BATCH_TOOLS=OFF \
         -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++" \
         -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
-        -DUSE_BATCH_TOOLS=OFF \
         ./src
 RUN  mkdir -p /InterSpec && \
      cmake --build build -j4
@@ -57,19 +59,12 @@ RUN  cmake --install ./build --prefix ./InterSpec && \
         rm -rf ./InterSpec/lib/cmake
 
 #Web Server
-FROM alpine:3
+FROM scratch
 LABEL app="InterSpec"
-COPY --from=build /work/InterSpec /interspec/
+COPY --from=build_interspec /work/InterSpec /interspec/
 WORKDIR /interspec
 EXPOSE 8078
-RUN apk --no-cache add \
-        openblas \
-        libstdc++ \
-        libgcc && \
-        chmod -R a+r * && \
-        chmod a+x bin/InterSpec &&  \
-        chmod 777 /interspec
-CMD ["/interspec/bin/InterSpec", "--config", "/interspec/share/interspec/data/config/wt_config_web.xml", "--userdatadir=/data", "--http-port=8078", "--http-address=0.0.0.0", "--docroot", "/interspec/share/interspec"]
+ENTRYPOINT ["./bin/InterSpec", "--config=./share/interspec/data/config/wt_config_web.xml", "--userdatadir=/data", "--http-port=8078", "--http-address=0.0.0.0", "--docroot", "./share/interspec"]
 
 
 
