@@ -237,6 +237,46 @@ include( cmake/FindWt.cmake )
 find_package( ZLIB REQUIRED )
 find_package( Threads REQUIRED )
 
+set( MINIGLOG ON CACHE INTERNAL "" )
+set( GFLAGS OFF CACHE INTERNAL "" )
+set( CXSPARSE OFF CACHE INTERNAL "" )
+set( ACCELERATESPARSE OFF CACHE INTERNAL "" )
+set( CUDA OFF CACHE INTERNAL "" )
+set( EXPORT_BUILD_DIR ON CACHE INTERNAL "" )
+set( BUILD_TESTING OFF CACHE INTERNAL "" )
+set( BUILD_EXAMPLES OFF CACHE INTERNAL "" )
+set( PROVIDE_UNINSTALL_TARGET OFF CACHE INTERNAL "" )
+# Check for local Ceres Solver
+set(LOCAL_CERES_DIR "${CMAKE_BINARY_DIR}/_deps/ceres-solver-src")
+if(EXISTS "${LOCAL_CERES_DIR}/CMakeLists.txt")
+  message(STATUS "Using local Ceres Solver from ${LOCAL_CERES_DIR}")
+  set(CERES_FETCHCONTENT_SOURCE SOURCE_DIR "${LOCAL_CERES_DIR}")
+else()
+  set(CERES_FETCHCONTENT_SOURCE
+    GIT_REPOSITORY https://github.com/ceres-solver/ceres-solver.git
+    GIT_TAG         85331393dc0dff09f6fb9903ab0c4bfa3e134b01 # release-2.2.0
+    GIT_SHALLOW    TRUE
+  )
+endif()
+
+find_package(Git)
+include(FetchContent)
+FetchContent_Declare(
+  ceres-solver
+  ${CERES_FETCHCONTENT_SOURCE}
+)
+FetchContent_MakeAvailable( ceres-solver )
+
+#FetchContent_GetProperties( ceres-solver )
+#if(NOT ceres-solver_POPULATED)
+#  FetchContent_Populate(ceres-solver)
+#add_subdirectory(${ceres-solver_SOURCE_DIR} ${ceres_solver_BINARY_DIR} EXCLUDE_FROM_ALL)
+#endif()
+set( Ceres_DIR  "${ceres-solver_BINARY_DIR}")
+set( Wt_INCLUDE_DIR "${/usr/include/WT}" )
+
+
+
 if( InterSpec_FETCH_DEPENDENCIES )
   set( Wt_INCLUDE_DIR "${wt_SOURCE_DIR}/src" )
 else( InterSpec_FETCH_DEPENDENCIES )
@@ -779,6 +819,7 @@ else(WIN32)
 endif(WIN32)
 
 
+
 if( USE_REL_ACT_TOOL )
   target_link_libraries(InterSpecLib PUBLIC Eigen3::Eigen Ceres::ceres )
 endif( USE_REL_ACT_TOOL )
@@ -909,9 +950,9 @@ if(USE_MYSQL_DB AND NOT HAS_WT_DBO_MYSQL)
     MESSAGE(FATAL_ERROR   "You do not have the MySQL Wt Dbo backend installed, but you have asked to use it")
 endif(USE_MYSQL_DB AND NOT HAS_WT_DBO_MYSQL)
 
-if(USE_SQLITE3_DB AND NOT HAS_WT_DBO_SQLITE3 AND NOT WIN32 AND NOT InterSpec_FETCH_DEPENDENCIES )
-    MESSAGE(FATAL_ERROR   "You do not have the SQLITE3 Wt Dbo backend installed, but you have asked to use it")
-endif(USE_SQLITE3_DB AND NOT HAS_WT_DBO_SQLITE3 AND NOT WIN32 AND NOT InterSpec_FETCH_DEPENDENCIES )
+#if(USE_SQLITE3_DB AND NOT HAS_WT_DBO_SQLITE3 AND NOT WIN32 AND NOT InterSpec_FETCH_DEPENDENCIES )
+    #MESSAGE(FATAL_ERROR   "You do not have the SQLITE3 Wt Dbo backend installed, but you have asked to use it")
+#endif(USE_SQLITE3_DB AND NOT HAS_WT_DBO_SQLITE3 AND NOT WIN32 AND NOT InterSpec_FETCH_DEPENDENCIES )
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/InterSpec/InterSpec_config.h.in
