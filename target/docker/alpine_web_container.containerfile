@@ -42,7 +42,7 @@ RUN --mount=type=bind,target=/mnt/host,rw    \
         uglify-js \
         uglifycss \
         git && \
-    if [ "$hostbuilddir" = "true" ] || [ "$hostdepdir" = "true" ]; then \
+    if [ "$hostbuilddir" = true ] || [ "$hostdepdir" = true ]; then \
         echo "Using host build directory" && \
         srcdir=/mnt/host && \
         builddir=/mnt/host/build && \
