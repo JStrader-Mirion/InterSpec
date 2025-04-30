@@ -15,7 +15,7 @@ jobs:
   container_matrix:
     strategy:
       matrix:
-        base_image: [debian, alpine]
+        base_image: [debian]
         arch: [x64]
 
     runs-on: ubuntu-latest
