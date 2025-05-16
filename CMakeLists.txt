@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set( CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "Set PIC to make InterSpec static lib" )
 
-if( CONTAINER_LIBC OR CONTAINER_MUSL)
+if( CONTAINER_LIBC OR CONTAINER_MUSL )
   set( BUILD_AS_LOCAL_SERVER OFF CACHE INTERNAL "" )
   set( CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
   set( USE_REL_ACT_TOOL ON CACHE INTERNAL "")
@@ -16,8 +16,7 @@ if( CONTAINER_LIBC OR CONTAINER_MUSL)
   set( ZLIB_INCLUDE_DIR:STRING "build/_deps/zlib-build")
   set( SpecUtils_PYTHON_BINDINGS ON )
   set( InterSpec_FETCH_DEPENDENCIES ON CACHE INTERNAL "" )
-  set ( USE_REL_ACT_TOOL ON ON CACHE INTERNAL "" )
-  if( CONTAINER_MUSL )
+  if( CONTAINER_MUSL=ON )
     set( CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++" CACHE INTERNAL "")
     set( CMAKE_FIND_LIBRARY_SUFFIXES ".a" CACHE INTERNAL "")
   endif()
@@ -236,6 +235,54 @@ include( cmake/FindWt.cmake )
 
 find_package( ZLIB REQUIRED )
 find_package( Threads REQUIRED )
+
+#set( MINIGLOG ON CACHE INTERNAL "" )
+#set( GFLAGS OFF CACHE INTERNAL "" )
+#set( CXSPARSE OFF CACHE INTERNAL "" )
+#set( ACCELERATESPARSE OFF CACHE INTERNAL "" )
+#set( CUDA OFF CACHE INTERNAL "" )
+#set( EXPORT_BUILD_DIR ON CACHE INTERNAL "" )
+#set( BUILD_TESTING OFF CACHE INTERNAL "" )
+#set( BUILD_EXAMPLES OFF CACHE INTERNAL "" )
+#set( PROVIDE_UNINSTALL_TARGET OFF CACHE INTERNAL "" )
+
+# Check for local Ceres Solver
+#set(LOCAL_CERES_DIR "${CMAKE_BINARY_DIR}/_deps/ceres-solver-src")
+#if(EXISTS "${LOCAL_CERES_DIR}/CMakeLists.txt")
+#  message(STATUS "Using local Ceres Solver from ${LOCAL_CERES_DIR}")
+#  set(CERES_FETCHCONTENT_SOURCE SOURCE_DIR "${LOCAL_CERES_DIR}")
+#else()
+#  set(CERES_FETCHCONTENT_SOURCE
+#    GIT_REPOSITORY https://github.com/ceres-solver/ceres-solver.git
+#    GIT_TAG         85331393dc0dff09f6fb9903ab0c4bfa3e134b01 # release-2.2.0
+#    GIT_SHALLOW    TRUE
+#  )
+#endif()
+
+#find_package(Git)
+#include(FetchContent)
+#FetchContent_Declare(
+#  ceres-solver
+#  ${CERES_FETCHCONTENT_SOURCE}
+#)
+#FetchContent_MakeAvailable( ceres-solver )
+
+#FetchContent_GetProperties( ceres-solver )
+#if(NOT ceres-solver_POPULATED)
+#  FetchContent_Populate(ceres-solver)
+#add_subdirectory(${ceres-solver_SOURCE_DIR} ${ceres_solver_BINARY_DIR} EXCLUDE_FROM_ALL)
+#endif()
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+find_package(Wt REQUIRED COMPONENTS wthttp)   # uses FindWt.cmake
+
+#target_include_directories(SpecUtils PUBLIC ${Wt_INCLUDE_DIR})
+#target_link_libraries(SpecUtils   PUBLIC ${Wt_LIBRARIES})
+
+set( Ceres_DIR  "${ceres-solver_BINARY_DIR}")
+#set( Wt_INCLUDE_DIR "${/usr/include/WT}" )
+
+
 
 if( InterSpec_FETCH_DEPENDENCIES )
   set( Wt_INCLUDE_DIR "${wt_SOURCE_DIR}/src" )
@@ -779,6 +826,7 @@ else(WIN32)
 endif(WIN32)
 
 
+
 if( USE_REL_ACT_TOOL )
   target_link_libraries(InterSpecLib PUBLIC Eigen3::Eigen Ceres::ceres )
 endif( USE_REL_ACT_TOOL )
@@ -838,10 +886,10 @@ endif(MSVC AND (NOT hasParent))
 
 #20180104: on my mac I tried compiling Wt with support for PDF (libharu), but only
 #  had the static libhpdfs, so I had to add bellow to link to this
-FIND_LIBRARY( HPDF_LIBRARY NAME hpdfs HINTS ${Wt_INCLUDE_DIR}/../lib )
+FIND_LIBRARY( HPDF_LIBRARY NAME hpdfs HINTS ${Wt_INCLUDE_DIR}/../lib /usr/lib/x86_64-linux-gnu/ )
 if(NOT HPDF_LIBRARY)
     message(
-        "Could not find libharu - if Wt was built with PDF support, you will get link errors"
+        "Could not find - if Wt was built with PDF support, you will get link errors"
     )
 else()
     target_link_libraries(InterSpecLib PUBLIC ${HPDF_LIBRARY})
@@ -909,9 +957,9 @@ if(USE_MYSQL_DB AND NOT HAS_WT_DBO_MYSQL)
     MESSAGE(FATAL_ERROR   "You do not have the MySQL Wt Dbo backend installed, but you have asked to use it")
 endif(USE_MYSQL_DB AND NOT HAS_WT_DBO_MYSQL)
 
-if(USE_SQLITE3_DB AND NOT HAS_WT_DBO_SQLITE3 AND NOT WIN32 AND NOT InterSpec_FETCH_DEPENDENCIES )
-    MESSAGE(FATAL_ERROR   "You do not have the SQLITE3 Wt Dbo backend installed, but you have asked to use it")
-endif(USE_SQLITE3_DB AND NOT HAS_WT_DBO_SQLITE3 AND NOT WIN32 AND NOT InterSpec_FETCH_DEPENDENCIES )
+#if(USE_SQLITE3_DB AND NOT HAS_WT_DBO_SQLITE3 AND NOT WIN32 AND NOT InterSpec_FETCH_DEPENDENCIES )
+    #MESSAGE(FATAL_ERROR   "You do not have the SQLITE3 Wt Dbo backend installed, but you have asked to use it")
+#endif(USE_SQLITE3_DB AND NOT HAS_WT_DBO_SQLITE3 AND NOT WIN32 AND NOT InterSpec_FETCH_DEPENDENCIES )
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/InterSpec/InterSpec_config.h.in

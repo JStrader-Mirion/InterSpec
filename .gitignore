@@ -34,6 +34,7 @@ InterSpec_resources/app_text/InterSpec_string*.csv
 .svnignore
 .bin
 .vs
+._deps
 WtsRsrcs
 XcodeFiles
 build
@@ -102,3 +103,6 @@ target/macOsQuickLook/SpecFilePreview/SpecFilePreview.xcodeproj/project.xcworksp
 
 target/wxWidgets/3rd_party
 .devcontainer/devcontainer.json
+# pixi environments
+.pixi
+*.egg-info
