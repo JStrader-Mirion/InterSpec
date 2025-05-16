@@ -236,51 +236,43 @@ include( cmake/FindWt.cmake )
 find_package( ZLIB REQUIRED )
 find_package( Threads REQUIRED )
 
-#set( MINIGLOG ON CACHE INTERNAL "" )
-#set( GFLAGS OFF CACHE INTERNAL "" )
-#set( CXSPARSE OFF CACHE INTERNAL "" )
-#set( ACCELERATESPARSE OFF CACHE INTERNAL "" )
-#set( CUDA OFF CACHE INTERNAL "" )
-#set( EXPORT_BUILD_DIR ON CACHE INTERNAL "" )
-#set( BUILD_TESTING OFF CACHE INTERNAL "" )
-#set( BUILD_EXAMPLES OFF CACHE INTERNAL "" )
-#set( PROVIDE_UNINSTALL_TARGET OFF CACHE INTERNAL "" )
-
+set( MINIGLOG ON CACHE INTERNAL "" )
+set( GFLAGS OFF CACHE INTERNAL "" )
+set( CXSPARSE OFF CACHE INTERNAL "" )
+set( ACCELERATESPARSE OFF CACHE INTERNAL "" )
+set( CUDA OFF CACHE INTERNAL "" )
+set( EXPORT_BUILD_DIR ON CACHE INTERNAL "" )
+set( BUILD_TESTING OFF CACHE INTERNAL "" )
+set( BUILD_EXAMPLES OFF CACHE INTERNAL "" )
+set( PROVIDE_UNINSTALL_TARGET OFF CACHE INTERNAL "" )
 # Check for local Ceres Solver
-#set(LOCAL_CERES_DIR "${CMAKE_BINARY_DIR}/_deps/ceres-solver-src")
-#if(EXISTS "${LOCAL_CERES_DIR}/CMakeLists.txt")
-#  message(STATUS "Using local Ceres Solver from ${LOCAL_CERES_DIR}")
-#  set(CERES_FETCHCONTENT_SOURCE SOURCE_DIR "${LOCAL_CERES_DIR}")
-#else()
-#  set(CERES_FETCHCONTENT_SOURCE
-#    GIT_REPOSITORY https://github.com/ceres-solver/ceres-solver.git
-#    GIT_TAG         85331393dc0dff09f6fb9903ab0c4bfa3e134b01 # release-2.2.0
-#    GIT_SHALLOW    TRUE
-#  )
-#endif()
+set(LOCAL_CERES_DIR "${CMAKE_BINARY_DIR}/_deps/ceres-solver-src")
+if(EXISTS "${LOCAL_CERES_DIR}/CMakeLists.txt")
+  message(STATUS "Using local Ceres Solver from ${LOCAL_CERES_DIR}")
+  set(CERES_FETCHCONTENT_SOURCE SOURCE_DIR "${LOCAL_CERES_DIR}")
+else()
+  set(CERES_FETCHCONTENT_SOURCE
+    GIT_REPOSITORY https://github.com/ceres-solver/ceres-solver.git
+    GIT_TAG         85331393dc0dff09f6fb9903ab0c4bfa3e134b01 # release-2.2.0
+    GIT_SHALLOW    TRUE
+  )
+endif()
 
-#find_package(Git)
-#include(FetchContent)
-#FetchContent_Declare(
-#  ceres-solver
-#  ${CERES_FETCHCONTENT_SOURCE}
-#)
-#FetchContent_MakeAvailable( ceres-solver )
+find_package(Git)
+include(FetchContent)
+FetchContent_Declare(
+  ceres-solver
+  ${CERES_FETCHCONTENT_SOURCE}
+)
+FetchContent_MakeAvailable( ceres-solver )
 
 #FetchContent_GetProperties( ceres-solver )
 #if(NOT ceres-solver_POPULATED)
 #  FetchContent_Populate(ceres-solver)
 #add_subdirectory(${ceres-solver_SOURCE_DIR} ${ceres_solver_BINARY_DIR} EXCLUDE_FROM_ALL)
 #endif()
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-
-find_package(Wt REQUIRED COMPONENTS wthttp)   # uses FindWt.cmake
-
-#target_include_directories(SpecUtils PUBLIC ${Wt_INCLUDE_DIR})
-#target_link_libraries(SpecUtils   PUBLIC ${Wt_LIBRARIES})
-
 set( Ceres_DIR  "${ceres-solver_BINARY_DIR}")
-#set( Wt_INCLUDE_DIR "${/usr/include/WT}" )
+set( Wt_INCLUDE_DIR "${/usr/include/WT}" )
 
 
 
